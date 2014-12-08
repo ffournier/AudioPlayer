@@ -1,0 +1,59 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.android2ee.audioplayer.activity.PlayerActivity" 
+    android:orientation="vertical">
+
+    
+    <LinearLayout android:id="@+id/linear_control"
+        			android:orientation="horizontal"
+        			android:layout_width="match_parent"
+        			android:layout_height="wrap_content"
+        			android:layout_alignParentBottom="true"
+        			android:layout_marginBottom="30dp"
+        			android:layout_marginTop="10dp">
+        			
+        <ImageButton android:id="@+id/player_play"
+        	android:layout_width="match_parent"
+        	android:layout_height="wrap_content"
+        	android:src="@android:drawable/ic_media_play"
+        	android:layout_weight="1"
+        	android:layout_gravity="center_horizontal"/> 
+        	
+    </LinearLayout>
+    
+    
+    <LinearLayout android:layout_width="match_parent"
+	        			android:layout_height="wrap_content"
+	        			android:background="@android:color/transparent"
+	        			android:layout_alignParentTop="true"
+	        			android:layout_marginTop="10dp"
+	        			android:layout_above="@id/linear_control"
+	        			android:orientation="horizontal">
+	    
+	    <!-- <LinearLayout android:id="@+id/player_chartfft"
+	        			android:layout_width="match_parent"
+	        			android:layout_height="match_parent"
+	        			android:orientation="vertical"
+	        			android:layout_weight="1"/> -->
+	     <com.android2ee.audioplayer.view.VisualizerFFTView
+	        		    android:id="@+id/player_viewfft"
+	       				android:layout_width="match_parent"
+	        			android:layout_height="match_parent"
+	        			android:layout_marginLeft="10dp"
+        				android:layout_marginRight="5dp"
+	        			android:layout_weight="1">
+	        
+	    </com.android2ee.audioplayer.view.VisualizerFFTView>   			
+	    <com.android2ee.audioplayer.view.VisualizerView
+	        		    android:id="@+id/player_view"
+	       				android:layout_width="match_parent"
+	        			android:layout_height="match_parent"
+	        			android:layout_marginLeft="10dp"
+        				android:layout_marginRight="5dp"
+	        			android:layout_weight="1">
+	        
+	    </com.android2ee.audioplayer.view.VisualizerView>
+    </LinearLayout>
+</RelativeLayout>
