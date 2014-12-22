@@ -205,7 +205,7 @@ public class MediaService extends Service implements OnAudioFocusChangeListener 
 	            // // writes the data to file from buffer
 	            // // stores the voice buffer
 	            byte bData[] = short2byte(sData);
-	            //sendRecordWaveFrom(bData, 0);
+	            sendRecordWaveFrom(bData, 0);
 	            os.write(bData, 0, BufferElements2Rec * BytesPerElement);
 	        } catch (IOException e) {
 	            e.printStackTrace();
