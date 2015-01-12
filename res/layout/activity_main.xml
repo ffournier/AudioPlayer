@@ -28,7 +28,7 @@
 	        android:layout_marginRight="10dp"
 	        android:layout_marginBottom="20dp"/>
 	    
-	    <com.android2ee.audioplayer.view.VisualizerView
+	    <com.android2ee.audioplayer.view.VisualizerShortView
 	        android:id="@+id/record_view_data"
 	        android:layout_width="match_parent"
 	        android:layout_height="100dp"

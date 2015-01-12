@@ -7,7 +7,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Timer;
-import java.util.TimerTask;
 
 import android.app.Service;
 import android.content.Intent;
@@ -185,8 +184,9 @@ public class MediaService extends Service implements OnAudioFocusChangeListener 
 	
 	private void writeAudioDataToFile(String path) {
 		short sData[] = new short[BufferElements2Rec];
-
-	    FileOutputStream os = null;
+		//byte bData[] = new byte[BufferElements2Rec * BytesPerElement];
+	    
+		FileOutputStream os = null;
 	    try {
 	    	Log.w("TAG", "wirting to file" + path);
 	        
@@ -201,12 +201,16 @@ public class MediaService extends Service implements OnAudioFocusChangeListener 
 
 	        mRecorder.read(sData, 0, BufferElements2Rec);
 	        
+	        //mRecorder.read(bData, 0, BufferElements2Rec * BytesPerElement);
+	        
 	        try {
 	            // // writes the data to file from buffer
 	            // // stores the voice buffer
-	            byte bData[] = short2byte(sData);
-	            sendRecordWaveFrom(bData, 0);
-	            os.write(bData, 0, BufferElements2Rec * BytesPerElement);
+	        	Log.w("TAG", Short.toString(sData[0]) + "  " + Short.toString(sData[50]));
+	        	sendRecordWaveFrom(sData, 0);
+	        	byte bData[] = short2byte(sData);
+	        	
+	        	os.write(bData, 0, BufferElements2Rec * BytesPerElement);
 	        } catch (IOException e) {
 	            e.printStackTrace();
 	        }
@@ -224,9 +228,9 @@ public class MediaService extends Service implements OnAudioFocusChangeListener 
 	    int shortArrsize = sData.length;
 	    byte[] bytes = new byte[shortArrsize * 2];
 	    for (int i = 0; i < shortArrsize; i++) {
-	        bytes[i * 2] = (byte) (sData[i] & 0x00FF);
+	    	bytes[i * 2] = (byte) (sData[i] & 0x00FF);
 	        bytes[(i * 2) + 1] = (byte) (sData[i] >> 8);
-	        sData[i] = 0;
+	        //sData[i] = 0;
 	    }
 	    return bytes;
 	
@@ -364,7 +368,7 @@ public class MediaService extends Service implements OnAudioFocusChangeListener 
 	}
 	
 	private void readAudioDataToFile(String path) {
-		byte sData[] = new byte[BufferElements2Rec * BytesPerElement];
+		byte bData[] = new byte[BufferElements2Rec * BytesPerElement];
 
 		try {
 			DataInputStream  dis = new DataInputStream(new BufferedInputStream(new FileInputStream(path)));
@@ -378,15 +382,17 @@ public class MediaService extends Service implements OnAudioFocusChangeListener 
 				}
 			}
 		
-		    while (isPlay == StatePlayer.STATE_PLAY  && dis.available() > 0) {
+		    while (isPlay == StatePlayer.STATE_PLAY  && dis.available() > 0 && mPlayer != null) {
 		    	int i=0;
 		    	Log.w("TAG", "reading one sample buf");
-		        while (dis.available() > 0 && i < sData.length) {
-		        	sData[i] = dis.readByte();
+		        while (dis.available() > 0 && i < bData.length) {
+		        	bData[i] = dis.readByte();
 		        	i++;
 		        }
-		        mPlayer.write(sData,0,sData.length);
-		        Log.w("TAG", "write data");
+		        if (mPlayer != null) {
+			        mPlayer.write(bData,0,bData.length);
+			        Log.w("TAG", "write data");
+		        }
 		      }
 		      dis.close();
 		      sendPlayEnding();
@@ -472,12 +478,12 @@ public class MediaService extends Service implements OnAudioFocusChangeListener 
 	/**
 	 * 
 	 */
-	private void sendRecordWaveFrom(byte[] waveFrom, int rate) {
+	private void sendRecordWaveFrom(short[] waveFrom, int rate) {
 		if (handler != null && isRecorderCreate()) {
 			Message msg = handler.obtainMessage();
 			msg.what = RECORD_WAVEFROM;
 			Bundle bundle = new Bundle();
-			bundle.putByteArray(KEY_RECORD_WAVEFROM, waveFrom);
+			bundle.putShortArray(KEY_RECORD_WAVEFROM, waveFrom);
 			bundle.putInt(KEY_PLAY_RATE, rate);
 			msg.setData(bundle);
 			handler.sendMessage(msg);

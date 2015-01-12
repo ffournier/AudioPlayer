@@ -1,7 +1,5 @@
 package com.android2ee.audioplayer.view;
 
-import java.util.ArrayList;
-
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -11,6 +9,7 @@ import android.media.audiofx.Visualizer;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 
@@ -19,23 +18,22 @@ import android.view.View;
  * A simple class that draws waveform data received from a
  * {@link Visualizer.OnDataCaptureListener#onWaveFormDataCapture }
  */
-public class VisualizerView extends View {
+public class VisualizerShortView extends View {
 	
-    private ArrayList<Byte> mBytesArray;
-    private byte[] mBytes;
+    private Short[] mShorts;
     private float[] mPoints;
     private Rect mRect = new Rect();
     
     private Paint mForePaint = new Paint();
 
-    public VisualizerView(Context context) {
+    public VisualizerShortView(Context context) {
         super(context);
         init();
     }
     
     
 
-    public VisualizerView(Context context, AttributeSet attrs,
+    public VisualizerShortView(Context context, AttributeSet attrs,
 			int defStyleAttr, int defStyleRes) {
 		super(context, attrs, defStyleAttr, defStyleRes);
 		init();
@@ -43,14 +41,14 @@ public class VisualizerView extends View {
 
 
 
-	public VisualizerView(Context context, AttributeSet attrs, int defStyle) {
+	public VisualizerShortView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 		init();
 	}
 
 
 
-	public VisualizerView(Context context, AttributeSet attrs) {
+	public VisualizerShortView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		init();
 	}
@@ -58,36 +56,28 @@ public class VisualizerView extends View {
 
 
 	private void init() {
-        mBytesArray = new ArrayList<Byte>();
-        mBytes = null;
+        mShorts = null;
         mForePaint.setStrokeWidth(1f);
         mForePaint.setAntiAlias(true);
         mForePaint.setColor(Color.rgb(0, 128, 255));
     }
 
-    public void updateVisualizer(byte[] bytes) {
-    	mBytes = bytes;
-    	for (byte value : bytes) {
-    		mBytesArray.add(value);
+    public void updateVisualizer(short[] shorts) {
+    	mShorts = new Short[shorts.length];
+    	for (int i = 0; i < shorts.length; i ++) {
+    		mShorts[i] = shorts[i];
     	}
     	invalidate();
     }
     
     public void endVisualizer() {
-    	mBytes = null;
-    	Byte[] temp = mBytesArray.toArray(new Byte[mBytesArray.size()]);
-       	mBytes = new byte[temp.length];
-       	for (int i = 0; i < temp.length ; i++) {
-       		mBytes[i] = temp[i];
-       	}
-       	mBytesArray.clear();
-       	invalidate();
+    	mShorts = null;
+    	invalidate();
     }
     
     public void startVisualizer() {
-    	mBytes = null;
-       	mBytesArray.clear();
-       	mPoints = null;
+    	mShorts = null;
+    	mPoints = null;
        	invalidate();
     }
     
@@ -98,9 +88,8 @@ public class VisualizerView extends View {
 		  } else {
 			  SavedState ss = (SavedState)state;
 			  super.onRestoreInstanceState(ss.getSuperState());
-			  this.mBytes = ss.mBytes;
+			  this.mShorts = ss.mShorts;
 			  this.mPoints = ss.mPoints;
-			  this.mBytesArray = ss.mBytesArray;
 			  invalidate();
 		  }
 	  }
@@ -110,10 +99,9 @@ public class VisualizerView extends View {
 		Parcelable superState = super.onSaveInstanceState();
 	    SavedState ss = new SavedState(superState);
 	    //end
-	    ss.mBytes = this.mBytes;
+	    ss.mShorts = this.mShorts;
 	    ss.mPoints = this.mPoints;
-	    ss.mBytesArray = this.mBytesArray;
-
+	    
 	    return ss;
 	  }
 
@@ -121,34 +109,36 @@ public class VisualizerView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        if (mBytes == null || mBytes.length == 0) {
+        if (mShorts == null || mShorts.length == 0) {
         	return;
         }
         
-        if (mPoints == null || mPoints.length < mBytes.length * 4) {
-            mPoints = new float[mBytes.length * 4];
+        if (mPoints == null || mPoints.length < mShorts.length * 4) {
+            mPoints = new float[mShorts.length * 4];
         } 
 
         mRect.set(0, 0, getWidth(), getHeight());
         
-        for (int i = 0; i < mBytes.length - 1; i++) {
+        for (int i = 0; i < mShorts.length - 1; i++) {
             
-        	mPoints[i * 4] = mRect.width() * i / (mBytes.length - 1);
-            mPoints[i * 4 + 1] = mRect.height() / 2
-                    + ((byte) (mBytes[i] + 128)) * (mRect.height() / 2) / 128;
-            mPoints[i * 4 + 2] = mRect.width() * (i + 1) / (mBytes.length - 1);
-            mPoints[i * 4 + 3] = mRect.height() / 2
-                    + ((byte) (mBytes[i + 1] + 128)) * (mRect.height() / 2) / 128;
+        	mPoints[i * 4] = mRect.width() * i / (mShorts.length - 1);
+           /* mPoints[i * 4 + 1] = mRect.height() / 2
+                    + ((short) (mShorts[i] + 32768)) * (mRect.height() / 2) / 32768;*/
+        	mPoints[i * 4 + 1] = (float) ((mRect.height() / 65536.0) * mShorts[i]) + mRect.height() / 2;
+            mPoints[i * 4 + 2] = mRect.width() * (i + 1) / (mShorts.length - 1);
+            mPoints[i * 4 + 3] = (float) ((mRect.height() / 65536.0) * mShorts[i + 1])  + mRect.height() / 2;
             
+            Log.w("TAG", "Data " + mShorts[i]);
+            Log.w("TAG", "Height " +  mRect.height() + " Data short " + (float) ((mRect.height() / 65536.0) * mShorts[i]));;
+            Log.w("TAG", "Points "  + mPoints[i * 4] + " , " + mPoints[i * 4 + 1]);
         }
         canvas.drawLines(mPoints, mForePaint);
     }
     
     private static class SavedState extends BaseSavedState {
 		  
-	    byte[] mBytes;
+    	Short[] mShorts;
 	    float[] mPoints;
-	    ArrayList<Byte> mBytesArray;
 	    
 	    SavedState(Parcelable superState) {
 	    	super(superState);
@@ -157,18 +147,16 @@ public class VisualizerView extends View {
 	    @SuppressWarnings("unchecked")
 		private SavedState(Parcel in) {
 	    	super(in);
-	    	this.mBytes = in.createByteArray();
+	    	this.mShorts = (Short[]) in.readArray(Short.class.getClassLoader());
 	    	this.mPoints = in.createFloatArray();
-	    	this.mBytesArray = (ArrayList<Byte>) in.readSerializable();
 	    }
 
 	    @Override
 	    public void writeToParcel(Parcel out, int flags) {
 	    	super.writeToParcel(out, flags);
-	    	out.writeByteArray(mBytes);
+	    	out.writeArray(mShorts);
 	    	out.writeFloatArray(mPoints);
-	    	out.writeSerializable(mBytesArray);
-	   }
+	    }
 
 	    //required field that makes Parcelables from a Parcel
 	    public static final Parcelable.Creator<SavedState> CREATOR =

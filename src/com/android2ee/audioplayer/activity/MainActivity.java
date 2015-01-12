@@ -27,7 +27,7 @@ import android.widget.ListView;
 import com.android2ee.audioplayer.R;
 import com.android2ee.audioplayer.pojo.POJOAudio;
 import com.android2ee.audioplayer.service.MediaService;
-import com.android2ee.audioplayer.view.VisualizerView;
+import com.android2ee.audioplayer.view.VisualizerShortView;
 
 public class MainActivity extends ABoundActivity {
 	
@@ -43,7 +43,7 @@ public class MainActivity extends ABoundActivity {
 	
 	private File pathFile = null;
 	private static final String fileNamePattern = "android2ee_%s_%04d-%02d-%02d-%02d-%02d-%02d.pcm";
-	private VisualizerView myView;
+	private VisualizerShortView myView;
 	
 	private class MyHandler extends Handler {
 		
@@ -51,7 +51,7 @@ public class MainActivity extends ABoundActivity {
 	    public void handleMessage(Message message) {
 			switch (message.what) {
 			case MediaService.RECORD_WAVEFROM:
-				byte[] values = message.getData().getByteArray(MediaService.KEY_RECORD_WAVEFROM);
+				short[] values = message.getData().getShortArray(MediaService.KEY_RECORD_WAVEFROM);
 	        	addData(values);
 	            break;    
 	        }
@@ -87,6 +87,7 @@ public class MainActivity extends ABoundActivity {
 					updateRecord(!mService.isRecorderCreate());
 				} else {
 					// TODO
+					
 				}
 			}
 		});
@@ -109,10 +110,8 @@ public class MainActivity extends ABoundActivity {
 			}
 		});
 		
-		myView = (VisualizerView) findViewById(R.id.record_view_data);
+		myView = (VisualizerShortView) findViewById(R.id.record_view_data);
 		
-		//File dir = getExternalFilesDir(Environment.DIRECTORY_MUSIC);
-		// Sometimes this fucking External return null don't know why ?
 		File dir = Environment.getExternalStorageDirectory();
 		if (dir != null) {
 			File subdir = new File(dir.getAbsolutePath() + SUB_PATH);
@@ -256,8 +255,9 @@ public class MainActivity extends ABoundActivity {
 	 /**
 	 * 
 	 */
-    private void addData(byte[] values) {
+    private void addData(short[] values) {
 		if (mBound && mService.isRecorderPlay()) {
+			Log.w("TAG", values[0] + "  " + values[50]);
     		myView.updateVisualizer(values);
     	}
 		
